@@ -111,6 +111,7 @@ rules:
       - applications
       - applications/status
       - argocds
+      - applicationsets 
   - verbs:
       - create
       - get
