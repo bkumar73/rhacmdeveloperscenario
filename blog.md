@@ -23,6 +23,7 @@ metadata:
 
 2. create developer group on the hub
 
+```
 ---
 apiVersion: user.openshift.io/v1
 kind: Group
@@ -31,6 +32,7 @@ metadata:
 users:
   - developer
 ---
+```
 
 3. Grant Developer admin-role in this namespace on the Hub
 
