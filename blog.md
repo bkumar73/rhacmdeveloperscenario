@@ -1,5 +1,6 @@
 1. create developer namespace on the hub
 
+```
 ---
 apiVersion: v1
 kind: Namespace
@@ -17,6 +18,8 @@ metadata:
     pod-security.kubernetes.io/warn-version: v1.24
   name: developer
 ---
+```
+
 
 2. create developer group on the hub
 
