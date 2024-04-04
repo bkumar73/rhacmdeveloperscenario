@@ -36,6 +36,7 @@ users:
 
 3. Grant Developer admin-role in this namespace on the Hub
 
+```
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -51,9 +52,11 @@ roleRef:
   name: admin
   apiGroup: rbac.authorization.k8s.io
 ---  
+```
 
 4. Create Managed-Cluster-Set for developers
 
+```
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSet
@@ -65,9 +68,12 @@ spec:
   clusterSelector:
     selectorType: ExclusiveClusterSetLabel
 ---
+```
+
 
 5. Give developer group view permissions to the Clusterset
 
+```
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -82,9 +88,11 @@ subjects:
   kind: Group
   name: developer
 ---
+```
 
 6. bind namespace to the developer clusterset
 
+```
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: ManagedClusterSetBinding
@@ -94,9 +102,12 @@ metadata:
 spec:
   clusterSet:  developer
 ---
+```
+
 
 7. Create a Placement that developer can deploy to developer clusters
 
+```
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
@@ -115,9 +126,11 @@ spec:
               values:
                 -  developer
 ---
+```
 
 8.  Configure ArgoCD
 
+```
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ArgoCD
@@ -235,13 +248,14 @@ spec:
   tls:
     ca: {}
 ---
-
+```
 
     
       
       
 11. On the Hub-Cluster create a Policy to rollout Managed-Service-Account and Cluster Permissions
 
+```
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
@@ -333,7 +347,6 @@ spec:
                       name: managed-sa-sample
             {{ end }}
             {{ end }}
-
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
@@ -348,12 +361,12 @@ subjects:
   - name: policy-gitops
     kind: Policy
     apiGroup: policy.open-cluster-management.io
-    
-    
-    
+```    
+       
 
 9. Create Gitops-ClusterResource
 
+```
 ---
 apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
@@ -369,3 +382,4 @@ spec:
     kind: Placement
     apiVersion: cluster.open-cluster-management.io/v1beta1
     name: developer-gitops-placement   
+```
