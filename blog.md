@@ -89,7 +89,78 @@ subjects:
   name: developer
 ---
 ```
-
+```
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: 'open-cluster-management:subscription-admin-cstark'
+rules:
+  - verbs:
+      - create
+      - get
+      - list
+      - watch
+      - update
+      - delete
+      - deletecollection
+      - patch
+    apiGroups:
+      - argoproj.io
+    resources:
+      - applications
+      - applications/status
+      - argocds
+  - verbs:
+      - create
+      - get
+      - list
+      - watch
+      - update
+      - delete
+      - deletecollection
+      - patch
+    apiGroups:
+      - app.k8s.io
+    resources:
+      - applications
+  - verbs:
+      - '*'
+    apiGroups:
+      - apps.open-cluster-management.io
+    resources:
+      - '*'
+  - verbs:
+      - '*'
+    apiGroups:
+      - ''
+    resources:
+      - configmaps
+      - secrets
+      - namespaces
+  - verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+    apiGroups:
+      - cluster.open-cluster-management.io
+      - register.open-cluster-management.io
+      - clusterview.open-cluster-management.io
+    resources:
+      - gitopsclusters
+      - multiclusterapplicationsetreports
+      - managedclustersets/join
+      - managedclustersets/bind
+      - managedclusters/accept
+      - managedclustersets
+      - managedclusters
+      - managedclustersetbindings
+      - placements
+      - placementdecisions
+```
 6. bind namespace to the developer clusterset
 
 ```
