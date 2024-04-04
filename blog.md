@@ -1,4 +1,5 @@
 1. create developer namespace on the hub
+
 ---
 apiVersion: v1
 kind: Namespace
@@ -15,20 +16,21 @@ metadata:
     pod-security.kubernetes.io/warn: baseline
     pod-security.kubernetes.io/warn-version: v1.24
   name: developer
-
-
-2. create developer group on the hub
 ---
 
+2. create developer group on the hub
+
+---
 apiVersion: user.openshift.io/v1
 kind: Group
 metadata:
   name: developer
 users:
   - developer
-
+---
 
 3. Grant Developer admin-role in this namespace on the Hub
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -43,7 +45,7 @@ roleRef:
   kind: Role
   name: admin
   apiGroup: rbac.authorization.k8s.io
-  
+---  
 
 4. Create Managed-Cluster-Set for developers
 
@@ -57,11 +59,11 @@ metadata:
 spec:
   clusterSelector:
     selectorType: ExclusiveClusterSetLabel
-
 ---
 
 5. Give developer group view permissions to the Clusterset
 
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -74,7 +76,7 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: developer
-
+---
 
 6. bind namespace to the developer clusterset
 
@@ -227,13 +229,14 @@ spec:
       type: ""
   tls:
     ca: {}
-
+---
 
 
     
       
       
 11. On the Hub-Cluster create a Policy to rollout Managed-Service-Account and Cluster Permissions
+
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
@@ -325,6 +328,7 @@ spec:
                       name: managed-sa-sample
             {{ end }}
             {{ end }}
+
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
