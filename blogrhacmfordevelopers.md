@@ -1,19 +1,16 @@
-Sometimes we are getting the question:
+### Sometimes we are getting the question:
 
-How can you use RHACM for Developers?   In the following I would like to explain an approach how
-it could be implemented.
+How can you use RHACM for Developers?   
 
-As a precondition we want to allow a Developer to use the RHACM-UI to deploy Applications.
+In the following I would like to explain an approach how it could be implemented.
 
-We further have the following conditions:
 
 a developer:
 
-* should work in RHACM in his own preconfigured-namespace
-* he should deploy to clusters in his developer-clusterset
-* he should not be able to modify any bindings, clustersets, etc
-* he should be able to edit Placements in his ClusterSet
-
+* should work in RHACM-UI, but only in his own ´preconfigured-namespace´
+* he should deploy to clusters in his ´developer-clusterset´
+* he should not be able to modify any ´bindings, clustersets´, etc
+* he should be able to edit ´Placements in his clusterSet´
 
 Let us go step by step:
 
@@ -39,7 +36,6 @@ metadata:
 ---
 ```
 
-
 2. create developer group on the hub
 
 ```
@@ -53,7 +49,7 @@ users:
 ---
 ```
 
-3. Grant Developer admin-role in this namespace on the Hub
+3. Grant developer admin-role in this namespace on the Hub
 
 ```
 ---
@@ -110,7 +106,6 @@ subjects:
 ```
 
 Now we create a ClusterRole which enables the UI-create feature.
-
 
 ```
 ---
@@ -199,7 +194,6 @@ spec:
 ---
 ```
 
-
 7. Create a Placement that developer can deploy to developer clusters
 
 ```
@@ -222,9 +216,7 @@ spec:
                 -  developer
 ---
 ```
-
 8.  Configure ArgoCD in the developer namespace
-
 ```
 ---
 apiVersion: argoproj.io/v1alpha1
