@@ -1,3 +1,22 @@
+Sometimes we are getting the question:
+
+How can you use RHACM for Developers?   In the following I would like to explain an approach how
+it could be implemented.
+
+As a precondition we want to allow a Developer to use the RHACM-UI to deploy Applications.
+
+We further have the following conditions:
+
+a developer:
+
+* should work in RHACM in his own preconfigured-namespace
+* he should deploy to clusters in his developer-clusterset
+* he should not be able to modify any bindings, clustersets, etc
+* he should be able to edit Placements in his ClusterSet
+
+
+Let us go step by step:
+
 1. create developer namespace on the hub
 
 ```
@@ -89,6 +108,10 @@ subjects:
   name: developer
 ---
 ```
+
+Now we create a ClusterRole which enables the UI-create feature.
+
+
 ```
 ---
 kind: ClusterRole
@@ -200,7 +223,7 @@ spec:
 ---
 ```
 
-8.  Configure ArgoCD
+8.  Configure ArgoCD in the developer namespace
 
 ```
 ---
@@ -321,11 +344,8 @@ spec:
     ca: {}
 ---
 ```
-
-    
       
-      
-11. On the Hub-Cluster create a Policy to rollout Managed-Service-Account and Cluster Permissions
+9. On the Hub-Cluster create a Policy to rollout Managed-Service-Account and Cluster Permissions
 
 ```
 ---
@@ -372,7 +392,7 @@ spec:
                   namespace: {{ $clustdec.clusterName }}
                 spec:
                   roles:
-                  - namespace: default
+                  - namespace: developer
                     rules:
                     - apiGroups: ["apps"]
                       resources: ["deployments"]
@@ -436,7 +456,7 @@ subjects:
 ```    
        
 
-9. Create Gitops-ClusterResource
+9. Create Gitops-ClusterResource in the namespace
 
 ```
 ---
@@ -455,3 +475,8 @@ spec:
     apiVersion: cluster.open-cluster-management.io/v1beta1
     name: developer-gitops-placement   
 ```
+
+
+Now when you login as a Developer you can deploy to any Cluster in your Developer-Clusterset.
+
+
