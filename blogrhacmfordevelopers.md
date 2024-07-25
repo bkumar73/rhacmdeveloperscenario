@@ -472,3 +472,50 @@ spec:
 Now when you login as a Developer you can deploy to any Cluster in your Developer-Clusterset.
 
 
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+ name: developer-app-metrics-role
+rules:
+ - apiGroups:
+     - "cluster.open-cluster-management.io"
+   resources:
+     - managedclusters # fixed
+   Verbs: # represents namespaces of managed clusters
+     - metrics/developer
+--- 
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: developer-app-metrics-role-binding
+subjects:
+ - kind: Group
+   apiGroup: rbac.authorization.k8s.io
+   name: developer
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: ClusterRole
+ name: developer-app-metrics-role
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
