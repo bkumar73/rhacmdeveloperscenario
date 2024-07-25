@@ -486,7 +486,6 @@ rules:
    Verbs: # represents namespaces of managed clusters
      - metrics/developer
 --- 
----
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
