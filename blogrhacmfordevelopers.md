@@ -472,7 +472,7 @@ spec:
 Now when you login as a Developer you can deploy to any Cluster in your Developer-Clusterset.
 
 
-
+```
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -499,7 +499,7 @@ roleRef:
  apiGroup: rbac.authorization.k8s.io
  kind: ClusterRole
  name: developer-app-metrics-role
---- 
+```
   
 
 
