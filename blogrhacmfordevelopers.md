@@ -7,10 +7,11 @@ In the following I would like to explain an approach how it could be implemented
 
 a developer:
 
-* should work in RHACM-UI, but only in his own `preconfigured-namespace`
+* should work in RHACM-UI, but only in his own `preconfigured-namespace`on the hub
 * he should deploy to clusters in his `developer-clusterset`
 * he should not be able to modify any `bindings, clustersets`, etc
 * he should be able to edit `Placements in his clusterSet`
+* there should be also restrictions on ManagedCluster
 
 Let us go step by step:
 
