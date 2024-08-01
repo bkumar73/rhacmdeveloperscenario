@@ -500,7 +500,7 @@ roleRef:
  kind: ClusterRole
  name: developer-app-metrics-role
 ```
-
+```
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -531,7 +531,7 @@ spec:
           remediationAction: inform
           severity: low
   remediationAction: enforce
-
+```
 
 
 
