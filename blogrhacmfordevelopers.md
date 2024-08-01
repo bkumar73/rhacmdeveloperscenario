@@ -500,7 +500,37 @@ roleRef:
  kind: ClusterRole
  name: developer-app-metrics-role
 ```
-  
+
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: remotetest
+  namespace: developer
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-namespace-config
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: developer
+                  labels:
+                    argocd.argoproj.io/managed-by: openshift-gitops
+          remediationAction: inform
+          severity: low
+  remediationAction: enforce
 
 
 
