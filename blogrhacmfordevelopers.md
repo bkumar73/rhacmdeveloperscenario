@@ -18,21 +18,21 @@ Let’s walk through the process step by step.
 
 1. **Create a Developer Namespace on the Hub**
 
-   Define a namespace specifically for developers to isolate their activities.
+  Define a namespace specifically for developers to isolate their activities.
 
-   ```yaml
-   ---
-   apiVersion: v1
-   kind: Namespace
-   metadata:
-     name: developer
-     annotations:
-     labels:
-       kubernetes.io/metadata.name: developer
-   ```
-  #### Create a Developer Group on the Hub
+ ```yaml
+ ---
+ apiVersion: v1
+ kind: Namespace
+ metadata:
+   name: developer
+   annotations:
+   labels:
+     kubernetes.io/metadata.name: developer
+ ```
+ #### Create a Developer Group on the Hub
 
-   Set up a group for developers to manage permissions.
+ Set up a group for developers to manage permissions.
 
    ```yaml
    ---
