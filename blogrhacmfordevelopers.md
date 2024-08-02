@@ -1,45 +1,49 @@
-### Sometimes we are getting the question:
+### Leveraging RHACM for Developers: A Comprehensive Guide
 
-How can you use RHACM for Developers?   
+One common question we receive is: *How can developers effectively use Red Hat Advanced Cluster Management (RHACM)?* In this post, we'll guide you through setting up RHACM to empower developers while maintaining necessary constraints.
 
-In the following I would like to explain an approach how it could be implemented.
+#### Overview
 
+Our goal is to set up a controlled environment where developers can:
 
-a developer:
+- Work within their designated `preconfigured-namespace` on the hub.
+- Deploy applications to clusters within their `developer-clusterset`.
+- Edit `Placements` within their cluster set.
+- Avoid modifying critical resources like `bindings` and `clustersets`.
+- Adhere to restrictions on `ManagedCluster` resources.
 
-* should work in RHACM-UI, but only in his own `preconfigured-namespace`on the hub
-* he should deploy to clusters in his `developer-clusterset`
-* he should not be able to modify any `bindings, clustersets`, etc
-* he should be able to edit `Placements in his clusterSet`
-* there should be also restrictions on ManagedCluster
+Let’s walk through the process step by step.
 
-Let us go step by step:
+#### Step-by-Step Implementation
 
-1. create developer namespace on the hub
+1. **Create a Developer Namespace on the Hub**
 
-```
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  annotations:
-    openshift.io/sa.scc.mcs: s0:c39,c29
-    openshift.io/sa.scc.supplemental-groups: 1001540000/10000
-    openshift.io/sa.scc.uid-range: 1001540000/10000
- labels:
-    kubernetes.io/metadata.name: developer
-    openshift-pipelines.tekton.dev/namespace-reconcile-version: 1.14.3
-    pod-security.kubernetes.io/audit: baseline
-    pod-security.kubernetes.io/audit-version: v1.24
-    pod-security.kubernetes.io/warn: baseline
-    pod-security.kubernetes.io/warn-version: v1.24
-  name: developer
----
-```
+   Define a namespace specifically for developers to isolate their activities.
 
-2. create developer group on the hub
+   ```yaml
+   ---
+   apiVersion: v1
+   kind: Namespace
+   metadata:
+     name: developer
+     annotations:
+       openshift.io/sa.scc.mcs: s0:c39,c29
+       openshift.io/sa.scc.supplemental-groups: 1001540000/10000
+       openshift.io/sa.scc.uid-range: 1001540000/10000
+     labels:
+       kubernetes.io/metadata.name: developer
+       openshift-pipelines.tekton.dev/namespace-reconcile-version: 1.14.3
+       pod-security.kubernetes.io/audit: baseline
+       pod-security.kubernetes.io/audit-version: v1.24
+       pod-security.kubernetes.io/warn: baseline
+       pod-security.kubernetes.io/warn-version: v1.24
+   ---
+Create a Developer Group on the Hub
 
-```
+Set up a group for developers to manage permissions.
+
+yaml
+Copy code
 ---
 apiVersion: user.openshift.io/v1
 kind: Group
@@ -48,11 +52,12 @@ metadata:
 users:
   - developer
 ---
-```
+Grant Admin Role to the Developer Group
 
-3. Grant developer admin-role in this namespace on the Hub
+Assign the admin role to the developer group within their namespace.
 
-```
+yaml
+Copy code
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -60,36 +65,35 @@ metadata:
   name: group-admin-binding
   namespace: developer
 subjects:
-- kind: Group
-  name: developer
-  apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: developer
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: admin
   apiGroup: rbac.authorization.k8s.io
 ---  
-```
+Create a Managed Cluster Set for Developers
 
-4. Create Managed-Cluster-Set for developers
+Define a Managed Cluster Set for developers to access.
 
-```
+yaml
+Copy code
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSet
 metadata:
-  annotations:
-    cluster.open-cluster-management.io/submariner-broker-ns: default-broker
   name: developer
 spec:
   clusterSelector:
     selectorType: ExclusiveClusterSetLabel
 ---
-```
+Grant View Permissions to the Developer Group
 
+Allow the developer group to view clusters within the Managed Cluster Set.
 
-5. Give developer group view permissions to the Clusterset
-
-```
+yaml
+Copy code
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -100,20 +104,21 @@ roleRef:
   kind: ClusterRole
   name: open-cluster-management:managedclusterset:view:developer
 subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: Group
-  name: developer
+  - kind: Group
+    name: developer
+    apiGroup: rbac.authorization.k8s.io
 ---
-```
+Create a Custom ClusterRole for UI Creation
 
-Now we create a ClusterRole which enables the UI-create feature.
+Define a ClusterRole that grants the necessary permissions for UI-based resource management.
 
-```
+yaml
+Copy code
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: 'open-cluster-management:subscription-admin-customized'
+  name: open-cluster-management:subscription-admin-customized
 rules:
   - verbs:
       - create
@@ -180,33 +185,37 @@ rules:
       - managedclustersetbindings
       - placements
       - placementdecisions
-```
-6. bind namespace to the developer clusterset
+---
+Bind Namespace to the Developer Cluster Set
 
-```
+Associate the developer namespace with the Managed Cluster Set.
+
+yaml
+Copy code
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: ManagedClusterSetBinding
 metadata:
-  name: demo
-  namespace:  developer
+  name: developer
+  namespace: developer
 spec:
-  clusterSet:  developer
+  clusterSet: developer
 ---
-```
+Create a Placement for Developer Deployments
 
-7. Create a Placement that developer can deploy to developer clusters
+Define a Placement that restricts deployments to the developer clusters.
 
-```
+yaml
+Copy code
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:
-  name:  developer-gitops-placement
-  namespace:  developer
+  name: developer-gitops-placement
+  namespace: developer
 spec:
   clusterSets:
-    - demo
+    - developer
   predicates:
     - requiredClusterSelector:
         labelSelector:
@@ -214,11 +223,14 @@ spec:
             - key: env
               operator: In
               values:
-                -  developer
+                - developer
 ---
-```
-8.  Configure ArgoCD in the developer namespace
-```
+Configure ArgoCD in the Developer Namespace
+
+Set up ArgoCD within the developer namespace to manage applications.
+
+yaml
+Copy code
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ArgoCD
@@ -235,7 +247,6 @@ spec:
         cpu: 250m
         memory: 512Mi
   controller:
-    processors: {}
     resources:
       limits:
         cpu: "2"
@@ -243,7 +254,6 @@ spec:
       requests:
         cpu: 250m
         memory: 1Gi
-    sharding: {}
   dex:
     openShiftOAuth: true
     resources:
@@ -264,8 +274,6 @@ spec:
       requests:
         cpu: 250m
         memory: 128Mi
-    route:
-      enabled: false
   ha:
     enabled: false
     resources:
@@ -275,12 +283,9 @@ spec:
       requests:
         cpu: 250m
         memory: 128Mi
-  initialSSHKnownHosts: {}
   prometheus:
     enabled: false
     ingress:
-      enabled: false
-    route:
       enabled: false
   rbac:
     policy: |
@@ -317,9 +322,6 @@ spec:
   server:
     autoscale:
       enabled: false
-    grpc:
-      ingress:
-        enabled: false
     ingress:
       enabled: false
     resources:
@@ -331,16 +333,15 @@ spec:
         memory: 128Mi
     route:
       enabled: true
-    service:
-      type: ""
   tls:
     ca: {}
 ---
-```
-      
-9. On the Hub-Cluster create a Policy to rollout Managed-Service-Account and Cluster Permissions
+Create a Policy for Managed Service Account and Cluster Permissions
 
-```
+Define a policy to manage service accounts and permissions across clusters.
+
+yaml
+Copy code
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
@@ -350,203 +351,4 @@ metadata:
   annotations:
     policy.open-cluster-management.io/standards: NIST-CSF
     policy.open-cluster-management.io/categories: PR.PT Protective Technology
-    policy.open-cluster-management.io/controls: PR.PT-3 Least Functionality
-spec:
-  remediationAction: enforce
-  disabled: false
-  policy-templates:
-    - objectDefinition:
-        apiVersion: policy.open-cluster-management.io/v1
-        kind: ConfigurationPolicy
-        metadata:
-          name: policy-gitops-sub
-        spec:
-          pruneObjectBehavior: None
-          remediationAction: enforce
-          severity: low
-          object-templates-raw: |
-            {{ range $placedec := (lookup "cluster.open-cluster-management.io/v1beta1" "PlacementDecision" "default" "" "cluster.open-cluster-management.io/placement=developer-gitops-placement").items }}
-            {{ range $clustdec := $placedec.status.decisions }}
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: authentication.open-cluster-management.io/v1alpha1
-                kind: ManagedServiceAccount
-                metadata:
-                  name: managed-sa-sample
-                  namespace: {{ $clustdec.clusterName }}
-                spec:
-                  rotation: {}
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: rbac.open-cluster-management.io/v1alpha1
-                kind: ClusterPermission
-                metadata:
-                  name: clusterpermission-msa-subject-sample
-                  namespace: {{ $clustdec.clusterName }}
-                spec:
-                  roles:
-                  - namespace: developer
-                    rules:
-                    - apiGroups: ["apps"]
-                      resources: ["deployments"]
-                      verbs: ["get", "list", "create", "update", "delete"]
-                    - apiGroups: [""]
-                      resources: ["configmaps", "secrets", "pods", "podtemplates", "persistentvolumeclaims", "persistentvolumes"]
-                      verbs: ["get", "update", "list", "create", "delete"]
-                    - apiGroups: ["storage.k8s.io"]
-                      resources: ["*"]
-                      verbs: ["list"]
-                  - namespace: mortgage
-                    rules:
-                    - apiGroups: ["apps"]
-                      resources: ["deployments"]
-                      verbs: ["get", "list", "create", "update", "delete"]
-                    - apiGroups: [""]
-                      resources: ["configmaps", "secrets", "pods", "services", "namespace"]
-                      verbs: ["get", "update", "list", "create", "delete"]
-                  clusterRole:
-                    rules:
-                    - apiGroups: ["*"]
-                      resources: ["*"]
-                      verbs: ["get", "list"]
-                  roleBindings:
-                  - namespace: default
-                    roleRef:
-                      kind: Role
-                    subject:
-                      apiGroup: authentication.open-cluster-management.io
-                      kind: ManagedServiceAccount
-                      name: managed-sa-sample
-                  roleBindings:
-                  - namespace: mortgage
-                    roleRef:
-                      kind: Role
-                    subject:
-                      apiGroup: authentication.open-cluster-management.io
-                      kind: ManagedServiceAccount
-                      name: managed-sa-sample
-                  clusterRoleBinding:
-                    subject:
-                      apiGroup: authentication.open-cluster-management.io
-                      kind: ManagedServiceAccount
-                      name: managed-sa-sample
-            {{ end }}
-            {{ end }}
----
-apiVersion: policy.open-cluster-management.io/v1
-kind: PlacementBinding
-metadata:
-  name: binding-policy-gitops
-  namespace: openshift-gitops
-placementRef:
-  name: local-cluster-placement
-  kind: Placement
-  apiGroup: cluster.open-cluster-management.io
-subjects:
-  - name: policy-gitops
-    kind: Policy
-    apiGroup: policy.open-cluster-management.io
-```    
-       
-
-9. Create Gitops-ClusterResource in the namespace
-
-```
----
-apiVersion: apps.open-cluster-management.io/v1beta1
-kind: GitOpsCluster
-metadata: 
-  name: developer-gitops-cluster
-  namespace: developer
-spec:
-  managedServiceAccountRef: "msa"
-  argoServer:
-    cluster: local-cluster
-    argoNamespace: developer
-  placementRef:
-    kind: Placement
-    apiVersion: cluster.open-cluster-management.io/v1beta1
-    name: developer-gitops-placement   
-```
-
-
-Now when you login as a Developer you can deploy to any Cluster in your Developer-Clusterset.
-
-
-```
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
- name: developer-app-metrics-role
-rules:
- - apiGroups:
-     - "cluster.open-cluster-management.io"
-   resources:
-     - managedclusters # fixed
-   Verbs: # represents namespaces of managed clusters
-     - metrics/developer
---- 
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
- name: developer-app-metrics-role-binding
-subjects:
- - kind: Group
-   apiGroup: rbac.authorization.k8s.io
-   name: developer
-roleRef:
- apiGroup: rbac.authorization.k8s.io
- kind: ClusterRole
- name: developer-app-metrics-role
-```
-```
-apiVersion: policy.open-cluster-management.io/v1
-kind: Policy
-metadata:
-  name: remotetest
-  namespace: developer
-  annotations:
-    policy.open-cluster-management.io/categories: CM Configuration Management
-    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
-    policy.open-cluster-management.io/standards: NIST SP 800-53
-spec:
-  disabled: false
-  policy-templates:
-    - objectDefinition:
-        apiVersion: policy.open-cluster-management.io/v1
-        kind: ConfigurationPolicy
-        metadata:
-          name: policy-namespace-config
-        spec:
-          object-templates:
-            - complianceType: musthave
-              objectDefinition:
-                apiVersion: v1
-                kind: Namespace
-                metadata:
-                  name: developer
-                  labels:
-                    argocd.argoproj.io/managed-by: openshift-gitops
-          remediationAction: inform
-          severity: low
-  remediationAction: enforce
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    policy.open-cluster-management.io/controls: PR.PT-3 Least
