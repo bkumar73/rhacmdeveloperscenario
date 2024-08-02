@@ -359,3 +359,45 @@ spec:
           severity: low
   remediationAction: enforce
   ```
+
+This OperatorPolicy installs GitopsOperator, it provides advanced OperatorManagement.  When using RHACM we generally recommend that Operators are installed via Policy.
+---
+
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: gitopsoperator
+  namespace: open-cluster-management-global-set
+  annotations:
+    policy.open-cluster-management.io/categories: ""
+    policy.open-cluster-management.io/standards: ""
+    policy.open-cluster-management.io/controls: ""
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1beta1
+        kind: OperatorPolicy
+        metadata:
+          name: install-operator
+        spec:
+          remediationAction: enforce
+          severity: critical
+          complianceType: musthave
+          subscription:
+            name: openshift-gitops-operator
+            namespace: openshift-gitops
+            channel: stable
+            source: redhat-operators
+            sourceNamespace: openshift-marketplace
+          upgradeApproval: Automatic
+          versions:
+          operatorGroup:
+            name: default
+            targetNamespaces:
+              - openshift-gitops
+
+
+
+
+
