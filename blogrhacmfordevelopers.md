@@ -37,7 +37,7 @@ Let’s walk through the process step by step.
        pod-security.kubernetes.io/audit-version: v1.24
        pod-security.kubernetes.io/warn: baseline
        pod-security.kubernetes.io/warn-version: v1.24
-   ---
+   ```
 Create a Developer Group on the Hub
 
 Set up a group for developers to manage permissions.
@@ -50,7 +50,7 @@ metadata:
   name: developer
 users:
   - developer
----
+```
 Grant Admin Role to the Developer Group
 
 Assign the admin role to the developer group within their namespace.
@@ -70,7 +70,8 @@ roleRef:
   kind: Role
   name: admin
   apiGroup: rbac.authorization.k8s.io
----  
+```
+ 
 Create a Managed Cluster Set for Developers
 
 Define a Managed Cluster Set for developers to access.
@@ -84,7 +85,7 @@ metadata:
 spec:
   clusterSelector:
     selectorType: ExclusiveClusterSetLabel
----
+```
 Grant View Permissions to the Developer Group
 
 Allow the developer group to view clusters within the Managed Cluster Set.
@@ -103,7 +104,7 @@ subjects:
   - kind: Group
     name: developer
     apiGroup: rbac.authorization.k8s.io
----
+```
 Create a Custom ClusterRole for UI Creation
 
 Define a ClusterRole that grants the necessary permissions for UI-based resource management.
@@ -180,7 +181,7 @@ rules:
       - managedclustersetbindings
       - placements
       - placementdecisions
----
+```
 Bind Namespace to the Developer Cluster Set
 
 Associate the developer namespace with the Managed Cluster Set.
@@ -194,7 +195,7 @@ metadata:
   namespace: developer
 spec:
   clusterSet: developer
----
+```
 Create a Placement for Developer Deployments
 
 Define a Placement that restricts deployments to the developer clusters.
@@ -217,7 +218,7 @@ spec:
               operator: In
               values:
                 - developer
----
+```
 Configure ArgoCD in the Developer Namespace
 
 Set up ArgoCD within the developer namespace to manage applications.
@@ -327,7 +328,7 @@ spec:
       enabled: true
   tls:
     ca: {}
----
+```
 Create a Policy for Managed Service Account and Cluster Permissions
 
 Define a policy to manage service accounts and permissions across clusters.
