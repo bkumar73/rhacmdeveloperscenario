@@ -42,8 +42,7 @@ Create a Developer Group on the Hub
 
 Set up a group for developers to manage permissions.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: user.openshift.io/v1
 kind: Group
@@ -56,8 +55,7 @@ Grant Admin Role to the Developer Group
 
 Assign the admin role to the developer group within their namespace.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -77,8 +75,7 @@ Create a Managed Cluster Set for Developers
 
 Define a Managed Cluster Set for developers to access.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSet
@@ -92,8 +89,7 @@ Grant View Permissions to the Developer Group
 
 Allow the developer group to view clusters within the Managed Cluster Set.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -112,8 +108,7 @@ Create a Custom ClusterRole for UI Creation
 
 Define a ClusterRole that grants the necessary permissions for UI-based resource management.
 
-yaml
-Copy code
+```yaml
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -190,8 +185,7 @@ Bind Namespace to the Developer Cluster Set
 
 Associate the developer namespace with the Managed Cluster Set.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: ManagedClusterSetBinding
@@ -205,8 +199,7 @@ Create a Placement for Developer Deployments
 
 Define a Placement that restricts deployments to the developer clusters.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
@@ -229,8 +222,7 @@ Configure ArgoCD in the Developer Namespace
 
 Set up ArgoCD within the developer namespace to manage applications.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ArgoCD
@@ -340,8 +332,7 @@ Create a Policy for Managed Service Account and Cluster Permissions
 
 Define a policy to manage service accounts and permissions across clusters.
 
-yaml
-Copy code
+```yaml
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
