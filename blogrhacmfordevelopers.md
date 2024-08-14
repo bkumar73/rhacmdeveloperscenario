@@ -359,7 +359,7 @@ spec:
           severity: low
   remediationAction: enforce
   ```
-#### This OperatorPolicy installs GitopsOperator, it provides advanced OperatorManagement.  When using RHACM we generally recommend that Operators are installed via Policy.
+This OperatorPolicy installs GitopsOperator, it provides advanced OperatorManagement.  When using RHACM we generally recommend that Operators are installed via Policy.
 
 ```yaml
 apiVersion: policy.open-cluster-management.io/v1
