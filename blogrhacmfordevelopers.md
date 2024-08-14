@@ -397,6 +397,129 @@ spec:
               - openshift-gitops
 ```
 
+On the Hub-Cluster create a Policy to rollout Managed-Service-Account and Cluster Permissions
 
-
+```
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-gitops
+  namespace: openshift-gitops
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-CSF
+    policy.open-cluster-management.io/categories: PR.PT Protective Technology
+    policy.open-cluster-management.io/controls: PR.PT-3 Least Functionality
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-gitops-sub
+        spec:
+          pruneObjectBehavior: None
+          remediationAction: enforce
+          severity: low
+          object-templates-raw: |
+            {{ range $placedec := (lookup "cluster.open-cluster-management.io/v1beta1" "PlacementDecision" "default" "" "cluster.open-cluster-management.io/placement=developer-gitops-placement").items }}
+            {{ range $clustdec := $placedec.status.decisions }}
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: authentication.open-cluster-management.io/v1alpha1
+                kind: ManagedServiceAccount
+                metadata:
+                  name: managed-sa-sample
+                  namespace: {{ $clustdec.clusterName }}
+                spec:
+                  rotation: {}
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.open-cluster-management.io/v1alpha1
+                kind: ClusterPermission
+                metadata:
+                  name: clusterpermission-msa-subject-sample
+                  namespace: {{ $clustdec.clusterName }}
+                spec:
+                  roles:
+                  - namespace: developer
+                    rules:
+                    - apiGroups: ["apps"]
+                      resources: ["deployments"]
+                      verbs: ["get", "list", "create", "update", "delete"]
+                    - apiGroups: [""]
+                      resources: ["configmaps", "secrets", "pods", "podtemplates", "persistentvolumeclaims", "persistentvolumes"]
+                      verbs: ["get", "update", "list", "create", "delete"]
+                    - apiGroups: ["storage.k8s.io"]
+                      resources: ["*"]
+                      verbs: ["list"]
+                  - namespace: mortgage
+                    rules:
+                    - apiGroups: ["apps"]
+                      resources: ["deployments"]
+                      verbs: ["get", "list", "create", "update", "delete"]
+                    - apiGroups: [""]
+                      resources: ["configmaps", "secrets", "pods", "services", "namespace"]
+                      verbs: ["get", "update", "list", "create", "delete"]
+                  clusterRole:
+                    rules:
+                    - apiGroups: ["*"]
+                      resources: ["*"]
+                      verbs: ["get", "list"]
+                  roleBindings:
+                  - namespace: default
+                    roleRef:
+                      kind: Role
+                    subject:
+                      apiGroup: authentication.open-cluster-management.io
+                      kind: ManagedServiceAccount
+                      name: managed-sa-sample
+                  roleBindings:
+                  - namespace: mortgage
+                    roleRef:
+                      kind: Role
+                    subject:
+                      apiGroup: authentication.open-cluster-management.io
+                      kind: ManagedServiceAccount
+                      name: managed-sa-sample
+                  clusterRoleBinding:
+                    subject:
+                      apiGroup: authentication.open-cluster-management.io
+                      kind: ManagedServiceAccount
+                      name: managed-sa-sample
+            {{ end }}
+            {{ end }}
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-gitops
+  namespace: openshift-gitops
+placementRef:
+  name: local-cluster-placement
+  kind: Placement
+  apiGroup: cluster.open-cluster-management.io
+subjects:
+  - name: policy-gitops
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
+Create Gitops-ClusterResource in the namespace
+---
+apiVersion: apps.open-cluster-management.io/v1beta1
+kind: GitOpsCluster
+metadata: 
+  name: developer-gitops-cluster
+  namespace: developer
+spec:
+  managedServiceAccountRef: "msa"
+  argoServer:
+    cluster: local-cluster
+    argoNamespace: developer
+  placementRef:
+    kind: Placement
+    apiVersion: cluster.open-cluster-management.io/v1beta1
+    name: developer-gitops-placement   
+```
 
